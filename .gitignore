@@ -1,0 +1,4 @@
+venv/
+memory.json
+history.json
+.env
