@@ -5,7 +5,6 @@ import json
 import datetime
 
 app = Flask(__name__)
-client = genai.Client(api_key=os.environ.get("GOOGLE_API_KEY"))
 
 MEMORY_FILE = "memory.json"
 conversation_history = []
@@ -27,7 +26,7 @@ def build_system_prompt(memory):
         memory_text = "\n\nThings you remember about the user:\n"
         for key, value in memory.items():
             memory_text += f"- {key}: {value}\n"
-    return f"""You are a helpful personal assistant.
+    return f"""You are a helpful personal assistant called VedicAI.
 Current date and time: {now}
 {memory_text}
 When the user shares personal info (name, preferences, goals),
@@ -54,6 +53,7 @@ def home():
 
 @app.route("/chat", methods=["POST"])
 def chat():
+    client = genai.Client(api_key=os.environ.get("GOOGLE_API_KEY"))
     memory = load_memory()
     user_input = request.json.get("message")
     conversation_history.append({
@@ -62,7 +62,7 @@ def chat():
     })
     try:
         response = client.models.generate_content(
-            model="gemini-2.0-flash",
+            model="gemini-2.5-flash",
             contents=conversation_history,
             config={"system_instruction": build_system_prompt(memory)}
         )
@@ -73,7 +73,7 @@ def chat():
         })
         return jsonify({"reply": reply})
     except Exception as e:
-        return jsonify({"reply": f"Error: {str(e)}"})
+        return jsonify({"reply": "⚠️ Sorry, I am unavailable right now. Please try again in a moment."})
 
 if __name__ == "__main__":
     app.run(debug=True)
