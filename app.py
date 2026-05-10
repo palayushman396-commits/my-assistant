@@ -1,5 +1,5 @@
 from flask import Flask, render_template, request, jsonify
-from google import genai
+from groq import Groq
 import os
 import json
 import datetime
@@ -53,23 +53,26 @@ def home():
 
 @app.route("/chat", methods=["POST"])
 def chat():
-    client = genai.Client(api_key=os.environ.get("GOOGLE_API_KEY"))
+    client = Groq(api_key=os.environ.get("GROQ_API_KEY"))
     memory = load_memory()
     user_input = request.json.get("message")
     conversation_history.append({
         "role": "user",
-        "parts": [{"text": user_input}]
+        "content": user_input
     })
     try:
-        response = client.models.generate_content(
-            model="gemini-2.5-flash",
-            contents=conversation_history,
-            config={"system_instruction": build_system_prompt(memory)}
+        response = client.chat.completions.create(
+            model="llama-3.3-70b-versatile",
+            messages=[
+                {"role": "system", "content": build_system_prompt(memory)}
+            ] + conversation_history,
+            max_tokens=1024
         )
-        reply = extract_and_update_memory(response.text, memory)
+        reply = response.choices[0].message.content
+        reply = extract_and_update_memory(reply, memory)
         conversation_history.append({
-            "role": "model",
-            "parts": [{"text": reply}]
+            "role": "assistant",
+            "content": reply
         })
         return jsonify({"reply": reply})
     except Exception as e:
