@@ -62,7 +62,7 @@ def chat():
     })
     try:
         response = client.models.generate_content(
-            model="gemini-2.5-flash",
+            model="gemini-1.5-flash",
             contents=conversation_history,
             config={"system_instruction": build_system_prompt(memory)}
         )
