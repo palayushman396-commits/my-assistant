@@ -73,7 +73,7 @@ def chat():
         })
         return jsonify({"reply": reply})
     except Exception as e:
-        return jsonify({"reply": "⚠️ Sorry, I am unavailable right now. Please try again in a moment."})
+        return jsonify({"reply": f"Error: {str(e)}"})
 
 if __name__ == "__main__":
     app.run(debug=True)
